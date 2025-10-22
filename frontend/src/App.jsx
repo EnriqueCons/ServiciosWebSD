@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useState } from "react";
 import ClientesTable from "./components/ClientesTable";
 import ClienteForm from "./components/ClienteForm";
