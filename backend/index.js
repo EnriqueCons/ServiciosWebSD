@@ -1,35 +1,36 @@
+import express from 'express';
+import cors from 'cors';
 import dotenv from 'dotenv';
+import getPool from './config/db.js';
+
+// Importar las rutas
+import clientesRoutes from './routes/clientes.routes.js';
+import productosRoutes from './routes/productos.routes.js';
+
 dotenv.config();
 
-import express from 'express';
-import pool from './config/db.js';
-import routesProductos from './routes/productos.routes.js';
-import routesClientes from './routes/clientes.routes.js';
-
-import cors from 'cors';
-
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
-app.use((req, res, next) => {
-    res.on('finish', () => {
-        console.log(`${req.method} ${req.originalUrl} [${res.statusCode}]`);
-    });
-    next();
-});
+// Verificar conexión al iniciar
+getPool()
+  .then(() => console.log('Base de datos conectada'))
+  .catch(err => console.error('Error de conexión:', err));
 
-
-app.use('/api/', routesProductos);
-app.use('/api/', routesClientes);
-
+// Ruta de prueba
 app.get('/', (req, res) => {
-    res.send("Backend conectado");
+  res.json({ message: 'API funcionando correctamente' });
 });
+
+// Registrar las rutas - IMPORTANTE: agregar /api como prefijo
+app.use('/api', clientesRoutes);
+app.use('/api', productosRoutes);
+
 
 app.listen(PORT, () => {
-    console.log(`Servidor escuchando en http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
-

@@ -1,21 +1,39 @@
-import { Pool } from 'pg';
+import sql from 'mssql';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const pool = new Pool({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
-});
+const config = {
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  server: process.env.DB_SERVER,
+  database: process.env.DB_NAME,
+  options: {
+    encrypt: true,
+    trustServerCertificate: false,
+    enableArithAbort: true
+  },
+  pool: {
+    max: 10,
+    min: 0,
+    idleTimeoutMillis: 30000
+  }
+};
 
-pool.connect().then(client =>{
-    console.log('Conexión a PostgreSQL exitosa');
-    client.release();
-}).catch(err => {
-    console.error('Error al conectar a PostgreSQL', err)
-});
+let pool = null;
 
-export default pool;
+const getPool = async () => {
+  try {
+    if (!pool) {
+      pool = await sql.connect(config);
+      console.log('Conectado a SQL Server (Azure)');
+    }
+    return pool;
+  } catch (err) {
+    console.error('Error conectando a la base de datos:', err);
+    throw err;
+  }
+};
+
+export default getPool;
+export { sql };
